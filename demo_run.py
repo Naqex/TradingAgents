@@ -27,7 +27,7 @@ if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
 # Import TradingAgents tools and schemas
-from tradingagents.agents.utils.agent_utils import (
+from tradingagents.agents.tools import (
     get_stock_data,
     get_indicators,
     get_fundamentals,

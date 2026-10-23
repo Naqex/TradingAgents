@@ -25,6 +25,7 @@ _GRAPH_CONFIG_KEYS = (
     "max_debate_rounds",
     "max_risk_discuss_rounds",
     "max_recur_limit",
+    "max_tool_rounds",
     "holding_period_days",
     "output_language",
     "checkpoint_enabled",
@@ -79,6 +80,7 @@ def build_run_provenance(
         for key in _GRAPH_CONFIG_KEYS
         if key in config
     }
+    graph_config["workflow_version"] = "parallel-analysts-memory-v070"
     graph_config["selected_analysts"] = list(selected_analysts)
     graph_config["asset_type"] = str(asset_type)
     graph_config["portfolio_fingerprint"] = str(portfolio_fingerprint)

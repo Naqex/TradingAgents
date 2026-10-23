@@ -108,3 +108,30 @@ def test_validator_rejects_run_id_on_multi_universe_manifest():
     with pytest.raises(ValueError, match="exactly one universe"):
         validate_run_provenance(manifest)
 
+
+
+@pytest.mark.parametrize("key", ["deep_think_provider", "quick_think_provider", "deep_think_backend_url", "quick_think_backend_url"])
+def test_route_fingerprint_covers_each_tier_without_leaking_endpoint(key):
+    from tradingagents.graph.trading_graph import _llm_route_fingerprint
+    original = _llm_route_fingerprint({"llm_provider": "openai"})
+    changed = _llm_route_fingerprint({"llm_provider": "openai", key: "https://relay.invalid/?token=secret"})
+    assert changed != original
+    assert "secret" not in changed
+
+
+def test_graph_hash_invalidates_after_tool_limit_changes():
+    assert _build({"max_tool_rounds": 2})["graph_config_hash"] != _build({"max_tool_rounds": 3})["graph_config_hash"]
+
+
+def test_recorded_manifest_uses_exact_portfolio_identity():
+    from types import SimpleNamespace
+
+    from tradingagents.graph.trading_graph import TradingAgentsGraph
+    graph = object.__new__(TradingAgentsGraph)
+    graph.config = {}
+    graph.selected_analysts = ("market",)
+    graph._log_state = lambda *_: None
+    first, second = {}, {}
+    graph.record_decision("AAPL", "2026-09-01", first, portfolio=SimpleNamespace(fingerprint=lambda: "book-a"))
+    graph.record_decision("AAPL", "2026-09-01", second, portfolio=SimpleNamespace(fingerprint=lambda: "book-b"))
+    assert first["run_provenance"]["run_id"] != second["run_provenance"]["run_id"]

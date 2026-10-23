@@ -6,7 +6,7 @@ import os
 import pandas as pd
 import pytest
 
-from tradingagents.dataflows import stockstats_utils as su
+from tradingagents.dataflows.vendors.yahoo import ohlcv as su
 
 
 @pytest.mark.unit
@@ -21,7 +21,7 @@ def test_write_ohlcv_cache_replaces_target_from_same_directory(tmp_path, monkeyp
         replace(source, destination)
 
     monkeypatch.setattr(su.os, "replace", _record_replace)
-    su._write_ohlcv_cache(frame, target)
+    su.write_ohlcv_cache(frame, target)
 
     assert target.read_text(encoding="utf-8").endswith("2026-07-18,123.45\n")
     assert len(replacements) == 1
@@ -42,7 +42,7 @@ def test_write_ohlcv_cache_cleans_temporary_file_when_replace_fails(tmp_path, mo
 
     monkeypatch.setattr(su.os, "replace", _fail_replace)
     with pytest.raises(OSError, match="simulated cache replace failure"):
-        su._write_ohlcv_cache(frame, target)
+        su.write_ohlcv_cache(frame, target)
 
     assert not target.exists()
     assert not list(tmp_path.glob("*.tmp"))
